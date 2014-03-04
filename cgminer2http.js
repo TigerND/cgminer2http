@@ -38,10 +38,14 @@ app.post('/', function(request, response) {
 	)
 	client.on('end',
 		function() {	  
-		  response.setHeader('Content-Type', 'application/json')
-		  response.setHeader('Content-Length', Buffer.byteLength(body))
-		  if (config.app.debug) console.log('A: ' + body)
-		  response.end(body)
+			if ((body) && (body[0] == '{')) {
+				response.setHeader('Content-Type', 'application/json')  
+			} else {
+				response.setHeader('Content-Type', 'text/plain')
+			}		  
+			response.setHeader('Content-Length', Buffer.byteLength(body))
+			if (config.app.debug) console.log('A: ' + body)
+			response.end(body)
 		}
 	)
 })
