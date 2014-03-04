@@ -1,6 +1,5 @@
 
-var minerPort = 4028
-var localPort = 4029
+var config = require('konfig')()
 
 var express = require('express'),
 	jade = require('jade'),
@@ -25,9 +24,9 @@ app.post('/', function(request, response) {
 	var cmd = request.body.api.cmd
 	var body = ''
 
-	console.log('Q: ' + cmd);	
+	if (config.app.debug) console.log('Q: ' + cmd);	
 	var client = net.connect(
-		{port: minerPort},
+		{port: config.app.miner.port},
 	    function() {
 			client.write(cmd)
 		}
@@ -41,11 +40,11 @@ app.post('/', function(request, response) {
 		function() {	  
 		  response.setHeader('Content-Type', 'application/json')
 		  response.setHeader('Content-Length', Buffer.byteLength(body))
-		  console.log('A: ' + body)
+		  if (config.app.debug) console.log('A: ' + body)
 		  response.end(body)
 		}
 	)
 })
 
-app.listen(localPort);
-console.log('Server has started at port ' + localPort);
+app.listen(config.app.local.port);
+console.log('Server has started at port ' + config.app.local.port);

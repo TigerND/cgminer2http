@@ -1,0 +1,19 @@
+default: &default
+    local:
+        port: 4029
+    miner:
+        port: 4028
+
+development:
+    <<: *default
+    debug: true
+
+test:
+    <<: *default
+
+staging:
+    <<: *default
+
+production: 
+    <<: *default
+    debug: false
