@@ -77,7 +77,7 @@ app.post('/', function(request, response) {
 		)
 		client.on('end',
 			function() {
-				sendResponse(response, body)
+				sendResponse(response, body.substring(0, body.length - 1))
 			}
 		)
 	} catch(err) {
