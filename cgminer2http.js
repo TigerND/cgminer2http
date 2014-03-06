@@ -20,34 +20,70 @@ app.get('/', function(request, response) {
     )
 })
 
-app.post('/', function(request, response) {	
-	var cmd = request.body.api.cmd
-	var body = ''
+function formatError(err, json)
+{
+	now = new Date().getTime()
+	if (json) {
+		return '{"STATUS":[{"STATUS":"E","When":' + now + ',"Code":14,"Msg":"' + err + '","Description":"n/a"}],"id":1}'
+	} else {
+		return 'STATUS=E,When=' + now + ',Code=14,Msg=' + err + ',Description=n/a|'
+	}
+}
+function sendResponse(response, body)
+{
+	if ((body) && (body[0] == '{')) {
+		response.setHeader('Content-Type', 'application/json')  
+	} else {
+		response.setHeader('Content-Type', 'text/plain')
+	}		  
+	response.setHeader('Content-Length', Buffer.byteLength(body))
+	if (config.app.debug) console.log('A: ' + body)
+	response.end(body)
+}
 
-	if (config.app.debug) console.log('Q: ' + cmd);	
-	var client = net.connect(
-		{port: config.app.miner.port},
-	    function() {
-			client.write(cmd)
+app.post('/', function(request, response) {	
+	var json = false
+	try {		
+		var cmd 
+		if (request.body.api != undefined) {
+			cmd = request.body.api.cmd 
+		} else {		
+			cmd = JSON.stringify(request.body)
 		}
-	)
-	client.on('data',
-		function(data) {
-			body += data
+		if (cmd['0'] == '{') {
+			json = true
 		}
-	)
-	client.on('end',
-		function() {	  
-			if ((body) && (body[0] == '{')) {
-				response.setHeader('Content-Type', 'application/json')  
-			} else {
-				response.setHeader('Content-Type', 'text/plain')
-			}		  
-			response.setHeader('Content-Length', Buffer.byteLength(body))
-			if (config.app.debug) console.log('A: ' + body)
-			response.end(body)
-		}
-	)
+		
+		var body = ''
+	
+		if (config.app.debug) console.log('Q: ' + cmd);	
+		var client = net.connect(
+			{port: config.app.miner.port},
+		    function() {
+				client.write(cmd)
+			}
+		)
+		client.on('error',
+			function(err) {
+				console.log(JSON.stringify(err))
+				body = formatError(err.errno.toString(), json)
+				sendResponse(response, body)
+			}
+		)
+		client.on('data',
+			function(data) {
+				body += data
+			}
+		)
+		client.on('end',
+			function() {
+				sendResponse(response, body)
+			}
+		)
+	} catch(err) {
+		body = formatError("Internal error", json)
+		sendResponse(response, body)
+	}	 
 })
 
 app.listen(config.app.local.port);
