@@ -5,7 +5,7 @@ var config = {
 		local: {
 			port: 4029
 		},
-		remote: {
+		miner: {
 			port: 4028
 		}
 	}
@@ -91,7 +91,7 @@ app.post('/', function(request, response) {
 			}
 		)
 	} catch(err) {
-		body = formatError("Internal error", json)
+		body = formatError(err, json)
 		sendResponse(response, body)
 	}	 
 })
