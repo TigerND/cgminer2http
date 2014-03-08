@@ -1,4 +1,5 @@
 default: &default
+    debug: false
     local:
         port: 4029
     miner:
@@ -6,7 +7,6 @@ default: &default
 
 development:
     <<: *default
-    debug: true
 
 test:
     <<: *default

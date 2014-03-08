@@ -1,5 +1,15 @@
 
-var config = require('konfig')()
+var config = {
+	app: {
+		debug: false,
+		local: {
+			port: 4029
+		},
+		remote: {
+			port: 4028
+		}
+	}
+}
 
 var express = require('express'),
 	jade = require('jade'),
@@ -7,7 +17,7 @@ var express = require('express'),
 	url = require('url')
 
 var app = express();
-app.use(express.bodyParser())
+app.use(express.urlencoded())
 
 app.get('/', function(request, response) {
     jade.renderFile('command.jade', {}, 
