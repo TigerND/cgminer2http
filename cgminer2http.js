@@ -1,4 +1,12 @@
 
+var express = require('express'),
+	jade = require('jade'),
+	net = require('net'),
+	url = require('url'),
+	path = require('path')
+
+var prefix = __dirname
+
 var config = {
 	app: {
 		debug: false,
@@ -11,16 +19,11 @@ var config = {
 	}
 }
 
-var express = require('express'),
-	jade = require('jade'),
-	net = require('net'),
-	url = require('url')
-
 var app = express();
 app.use(express.urlencoded())
 
 app.get('/', function(request, response) {
-    jade.renderFile('command.jade', {}, 
+    jade.renderFile(path.join(prefix, 'command.jade'), {}, 
     	function (err, html) {
 	    	if (err) throw err
 			response.setHeader('Content-Type', 'text/html')
