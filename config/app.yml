@@ -1,8 +1,9 @@
 default: &default
     debug: false
     local:
-        port: 4029
+        port: 4030
     miner:
+        host: '127.0.0.1'
         port: 4028
 
 development:

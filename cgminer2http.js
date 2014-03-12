@@ -1,37 +1,16 @@
 
+var path = require('path')
+
+var config = require('konfig')({ path: path.join(__dirname, 'config') })
+
 var express = require('express'),
 	jade = require('jade'),
 	net = require('net'),
-	url = require('url'),
-	path = require('path')
-
-var prefix = __dirname
-
-var config = {
-	app: {
-		debug: false,
-		local: {
-			port: 4029
-		},
-		miner: {
-			port: 4028
-		}
-	}
-}
+	url = require('url')	
 
 var app = express();
 app.use(express.urlencoded())
-
-app.get('/', function(request, response) {
-    jade.renderFile(path.join(prefix, 'command.jade'), {}, 
-    	function (err, html) {
-	    	if (err) throw err
-			response.setHeader('Content-Type', 'text/html')
-			response.setHeader('Content-Length', Buffer.byteLength(html))
-			response.end(html)
-	    }
-    )
-})
+app.use(express.json())
 
 function formatError(err, json)
 {
@@ -57,46 +36,62 @@ function sendResponse(response, body)
 app.post('/', function(request, response) {	
 	var json = false
 	try {		
-		var cmd 
+		var address = 'tcp://' + config.app.miner.host + ':' + config.app.miner.port
+		var command = null 
+		if (config.app.debug) console.log(JSON.stringify(request.body))
 		if (request.body.api != undefined) {
-			cmd = request.body.api.cmd 
+			address = 'tcp://' + request.body.api.address
+			if (typeof request.body.api.command == "string") {
+				command = request.body.api.command
+			} else {
+				command = JSON.stringify(request.body.api.command)
+			}			 
 		} else {		
-			cmd = JSON.stringify(request.body)
+			body = formatError('Invalid parameters', json)
+			sendResponse(response, body)
+			return
 		}
-		if (cmd['0'] == '{') {
+		if (command['0'] == '{') {
 			json = true
+		}
+		var uri = url.parse(address) 
+		var params = {
+			host: uri.hostname || config.app.miner.host,
+			port: uri.port || config.app.miner.port
 		}
 		
 		var body = ''
 	
-		if (config.app.debug) console.log('Q: ' + cmd);	
-		var client = net.connect(
-			{port: config.app.miner.port},
-		    function() {
-				client.write(cmd)
-			}
-		)
-		client.on('error',
-			function(err) {
-				console.log(JSON.stringify(err))
-				body = formatError(err.errno.toString(), json)
-				sendResponse(response, body)
-			}
-		)
-		client.on('data',
-			function(data) {
-				body += data
-			}
-		)
-		client.on('end',
-			function() {
-				sendResponse(response, body.substring(0, body.length - 1))
-			}
-		)
+		if (config.app.debug) console.log('Q ' + JSON.stringify(params) + ': ' + cmd);	
+		var client = net.connect(params, function() {
+			client.write(command)
+		})
+		client.on('error', function(err) {
+			console.log(params.host + ":" + params.port + ": " + (err.message || err.errno))
+			body = formatError(err.message || err.errno, json)
+			sendResponse(response, body)
+		})
+		client.on('data', function(data) {
+			body += data
+		})
+		client.on('end', function() {
+			sendResponse(response, body.substring(0, body.length - 1))
+		})
 	} catch(err) {
 		body = formatError(err, json)
 		sendResponse(response, body)
 	}	 
+})
+
+app.get('/', function(request, response) {
+    jade.renderFile(path.join(__dirname, 'command.jade'), {}, 
+    	function (err, html) {
+	    	if (err) throw err
+			response.setHeader('Content-Type', 'text/html')
+			response.setHeader('Content-Length', Buffer.byteLength(html))
+			response.end(html)
+	    }
+    )
 })
 
 app.listen(config.app.local.port);
