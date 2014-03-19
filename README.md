@@ -11,9 +11,9 @@ To run this proxy you need to:
 * Install node.js from http://nodejs.org/
 * Run the following commands:
 
-  >   npm -g install
+  >   npm install
   
-  >   node cgminer2http
+  >   npm start
 
 
 
