@@ -28,6 +28,9 @@ function sendResponse(response, body)
 	} else {
 		response.setHeader('Content-Type', 'text/plain')
 	}		  
+	response.setHeader('Access-Control-Allow-Origin', '*')
+    response.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+    response.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 	response.setHeader('Content-Length', Buffer.byteLength(body))
 	if (config.app.debug) console.log('A: ' + body)
 	response.end(body)
