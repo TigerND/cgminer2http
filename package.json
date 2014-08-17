@@ -10,7 +10,8 @@
     "node-windows": "0.1.x"
   },
   "scripts": {
-    "start": "node winsrv-install.js",
-    "stop": "node winsrv-uninstall.js"
+    "start": "node cgminer2http.js",
+    "winsrv-install": "node winsrv-install.js",
+    "winsrv-uninstall": "node winsrv-uninstall.js"
   }
 }
