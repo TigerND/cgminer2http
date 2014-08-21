@@ -3,6 +3,7 @@
   "description": "CGMiner 2 HTTP Proxy",
   "version": "0.1.1",
   "private": true,
+  "main": "cgminer2http.js",
   "dependencies": {
     "konfig": "x",
     "express": "3.x",
